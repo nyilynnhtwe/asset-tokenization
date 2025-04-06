@@ -1,6 +1,6 @@
-import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { SuiClient } from "@mysten/sui.js/client";
-import { Ed25519Keypair } from "@mysten/sui.js/keypairs/ed25519";
+import { Transaction } from "@mysten/sui/transactions";
+import { SuiClient } from "@mysten/sui/client";
+import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import { KioskClient, KioskTransaction } from "@mysten/kiosk";
 import { SUI_NETWORK, KIOSK_NETWORK, adminPhrase } from "../config";
 
@@ -17,8 +17,8 @@ const owner_keypair = Ed25519Keypair.deriveKeypair(
 const address = owner_keypair.toSuiAddress().toString();
 
 export async function CreateNewKiosk() {
-  const tx = new TransactionBlock();
-  const kioskTx = new KioskTransaction({ transactionBlock: tx, kioskClient });
+  const tx = new Transaction();
+  const kioskTx = new KioskTransaction({ transaction: tx, kioskClient });
 
   kioskTx.create();
 
@@ -26,8 +26,8 @@ export async function CreateNewKiosk() {
 
   kioskTx.finalize();
 
-  const result = await client.signAndExecuteTransactionBlock({
-    transactionBlock: tx,
+  const result = await client.signAndExecuteTransaction({
+    transaction: tx,
     signer: owner_keypair,
     options: {
       showEffects: true,

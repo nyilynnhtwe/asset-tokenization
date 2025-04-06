@@ -1,11 +1,11 @@
-import { normalizeSuiObjectId } from "@mysten/sui.js/utils";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { fromHEX } from "@mysten/bcs";
+import { normalizeSuiObjectId, fromHex } from "@mysten/sui/utils";
+import { Transaction } from "@mysten/sui/transactions";
 import { assetTokenizationPackageId, SUI_NETWORK } from "./config";
-import { SuiClient } from "@mysten/sui.js/client";
+import { SuiClient } from '@mysten/sui/client';
 import { getSigner } from "./helpers";
-import { CompiledModule, getBytecode } from "./utils/bytecode-template";
-import init, * as wasm from "move-binary-format-wasm";
+import { bcs } from '@mysten/bcs';
+import { getBytecode } from "./utils/bytecode-template";
+import init, * as template from '@mysten/move-bytecode-template';
 import { bytecode as genesis_bytecode } from "./utils/genesis_bytecode";
 
 const client = new SuiClient({
@@ -23,28 +23,69 @@ const publishNewAsset = async (
 ) => {
   const signer = getSigner();
 
-  const template = getBytecode();
+  const templateBytecode = getBytecode();
 
-  const compiledModule = new CompiledModule(
-    JSON.parse(wasm.deserialize(template))
-  )
-    .updateConstant(0, totalSupply, "100", "u64")
-    .updateConstant(1, symbol, "Symbol", "string")
-    .updateConstant(2, asset_name, "Name", "string")
-    .updateConstant(3, description, "Description", "string")
-    .updateConstant(4, iconUrl, "icon_url", "string")
-    .updateConstant(5, burnable, "true", "bool")
-    .changeIdentifiers({
-      template: moduleName,
-      TEMPLATE: moduleName.toUpperCase(),
-    });
+  const templateBytecodeUnit8Array = fromHex(templateBytecode);
 
-  const bytesToPublish = wasm.serialize(JSON.stringify(compiledModule));
+  // Update identifiers
+  let updatedBytes = template.update_identifiers(templateBytecodeUnit8Array, {
+    TEMPLATE: moduleName.toUpperCase(),
+    template: moduleName
+  });
 
-  const tx = new TransactionBlock();
+  // Update DECIMALS
+  updatedBytes = template.update_constants(
+    updatedBytes,
+    bcs.u64().serialize(Number(totalSupply)).toBytes(), // new value
+    bcs.u64().serialize(100).toBytes(), // current value
+    'U64', // type of the constant
+  );
+
+  // Update SYMBOL
+  updatedBytes = template.update_constants(
+    updatedBytes,
+    bcs.string().serialize(symbol).toBytes(), // new value
+    bcs.string().serialize('Symbol').toBytes(), // current value
+    'Vector(U8)', // type of the constant
+  );
+
+  // Update NAME
+  updatedBytes = template.update_constants(
+    updatedBytes,
+    bcs.string().serialize(asset_name).toBytes(), // new value
+    bcs.string().serialize('Name').toBytes(), // current value
+    'Vector(U8)', // type of the constant
+  );
+
+  // Update DESCRIPTION
+  updatedBytes = template.update_constants(
+    updatedBytes,
+    bcs.string().serialize(description).toBytes(), // new value
+    bcs.string().serialize('Description').toBytes(), // current value
+    'Vector(U8)', // type of the constant
+  );
+
+  // Update DESCRIPTION
+  updatedBytes = template.update_constants(
+    updatedBytes,
+    bcs.string().serialize(iconUrl).toBytes(), // new value
+    bcs.string().serialize('icon_url').toBytes(), // current value
+    'Vector(U8)', // type of the constant
+  );
+
+  // Update Burnable
+  updatedBytes = template.update_constants(
+    updatedBytes,
+    bcs.bool().serialize(burnable.toLowerCase() == "true").toBytes(), // new value
+    bcs.bool().serialize('true'.toLowerCase() == "true").toBytes(), // current value
+    'Vector(U8)', // type of the constant
+  );
+
+
+  const tx = new Transaction();
   tx.setGasBudget(100000000);
   const [upgradeCap] = tx.publish({
-    modules: [[...fromHEX(bytesToPublish)], [...fromHEX(genesis_bytecode)]],
+    modules: [[...updatedBytes], [...fromHex(genesis_bytecode)]],
     dependencies: [
       normalizeSuiObjectId("0x1"),
       normalizeSuiObjectId("0x2"),
@@ -54,12 +95,12 @@ const publishNewAsset = async (
 
   tx.transferObjects(
     [upgradeCap],
-    tx.pure(signer.getPublicKey().toSuiAddress(), "address")
+    tx.pure("address", signer.getPublicKey().toSuiAddress())
   );
 
   const txRes = await client
-    .signAndExecuteTransactionBlock({
-      transactionBlock: tx,
+    .signAndExecuteTransaction({
+      transaction: tx,
       signer,
       requestType: "WaitForLocalExecution",
       options: {

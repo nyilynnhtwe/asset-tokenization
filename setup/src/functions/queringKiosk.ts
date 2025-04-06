@@ -1,5 +1,5 @@
-import { SuiClient } from "@mysten/sui.js/client";
-import { Ed25519Keypair } from "@mysten/sui.js/keypairs/ed25519";
+import { SuiClient } from "@mysten/sui/client";
+import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import { KioskClient } from "@mysten/kiosk";
 import { SUI_NETWORK, KIOSK_NETWORK, adminPhrase, buyerPhrase } from "../config";
 

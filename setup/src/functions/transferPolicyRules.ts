@@ -1,6 +1,6 @@
-import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { SuiClient, getFullnodeUrl } from "@mysten/sui.js/client";
-import { Ed25519Keypair } from "@mysten/sui.js/keypairs/ed25519";
+import { Transaction } from "@mysten/sui/transactions";
+import { SuiClient, getFullnodeUrl } from "@mysten/sui/client";
+import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import { KioskClient, TransferPolicyTransaction, percentageToBasisPoints } from "@mysten/kiosk";
 import { SUI_NETWORK, KIOSK_NETWORK, adminPhrase, transferPolicy, tokenizedAssetType } from "../config";
 
@@ -17,7 +17,7 @@ const owner_keypair = Ed25519Keypair.deriveKeypair(
 const address = owner_keypair.toSuiAddress().toString();
 
 export async function TransferPolicyRules(transfer_policy?: string) {
-  const tx = new TransactionBlock();
+  const tx = new Transaction();
   const targetPolicyID = transfer_policy ?? transferPolicy;
   // You could have more than one cap, since we can create more than one transfer policy.
   const policyCaps = await kioskClient.getOwnedTransferPoliciesByType({
@@ -29,7 +29,7 @@ export async function TransferPolicyRules(transfer_policy?: string) {
 
   const tpTx = new TransferPolicyTransaction({
     kioskClient,
-    transactionBlock: tx,
+    transaction: tx,
     cap: policyCap,
   });
 
@@ -45,8 +45,8 @@ export async function TransferPolicyRules(transfer_policy?: string) {
   // .removeRoyaltyRule()
   // .removePersonalKioskRule()
 
-  const result = await client.signAndExecuteTransactionBlock({
-    transactionBlock: tx,
+  const result = await client.signAndExecuteTransaction({
+    transaction: tx,
     signer: owner_keypair,
     options: {
       showEffects: true,

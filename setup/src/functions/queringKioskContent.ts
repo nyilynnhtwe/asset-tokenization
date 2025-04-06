@@ -1,4 +1,4 @@
-import { SuiClient } from "@mysten/sui.js/client";
+import { SuiClient } from "@mysten/sui/client";
 import { KioskClient } from "@mysten/kiosk";
 import { SUI_NETWORK, KIOSK_NETWORK, targetKioskId, tokenizedAssetType } from "../config";
 

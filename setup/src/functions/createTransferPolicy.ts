@@ -1,6 +1,6 @@
-import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { SuiClient } from "@mysten/sui.js/client";
-import { Ed25519Keypair } from "@mysten/sui.js/keypairs/ed25519";
+import { Transaction } from "@mysten/sui/transactions";
+import { SuiClient } from "@mysten/sui/client";
+import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import { KioskClient } from "@mysten/kiosk";
 import { SUI_NETWORK, KIOSK_NETWORK, adminPhrase, registry, publisher, assetTokenizationPackageId, tokenizedAssetType, assetOTW } from "../config";
 
@@ -17,7 +17,7 @@ const owner_keypair = Ed25519Keypair.deriveKeypair(
 const address = owner_keypair.toSuiAddress().toString();
 
 export async function CreateTransferPolicy() {
-  const tx = new TransactionBlock();
+  const tx = new Transaction();
 
   const [policy, cap] = tx.moveCall({
     target: `${assetTokenizationPackageId}::proxy::setup_tp`,
@@ -35,8 +35,8 @@ export async function CreateTransferPolicy() {
     arguments: [policy],
   });
 
-  const result = await client.signAndExecuteTransactionBlock({
-    transactionBlock: tx,
+  const result = await client.signAndExecuteTransaction({
+    transaction: tx,
     signer: owner_keypair,
     options: {
       showEffects: true,

@@ -1,6 +1,6 @@
-import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { SuiClient } from "@mysten/sui.js/client";
-import { Ed25519Keypair } from "@mysten/sui.js/keypairs/ed25519";
+import { Transaction } from "@mysten/sui/transactions";
+import { SuiClient } from "@mysten/sui/client";
+import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import { SUI_NETWORK, assetOTW, assetTokenizationPackageId, adminPhrase, assetCap } from "../config";
 
 const client = new SuiClient({ url: SUI_NETWORK });
@@ -25,16 +25,16 @@ function getVecMapValues() {
 export async function Mint() {
   const { keys, values } = getVecMapValues();
 
-  const tx = new TransactionBlock();
+  const tx = new Transaction();
 
   let tokenized_asset = tx.moveCall({
     target: `${assetTokenizationPackageId}::tokenized_asset::mint`,
     typeArguments: [assetOTW],
     arguments: [
       tx.object(assetCap),
-      tx.pure(keys, "vector<string>"),
-      tx.pure(values, "vector<string>"),
-      tx.pure(3),
+      tx.pure.vector("string",keys),
+      tx.pure.vector("string",values),
+      tx.pure.u64(3),
     ],
   });
 
@@ -43,8 +43,8 @@ export async function Mint() {
     owner_keypair.getPublicKey().toSuiAddress()
   );
 
-  const result = await client.signAndExecuteTransactionBlock({
-    transactionBlock: tx,
+  const result = await client.signAndExecuteTransaction({
+    transaction: tx,
     signer: owner_keypair,
     options: {
       showEffects: true,

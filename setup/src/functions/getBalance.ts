@@ -1,5 +1,5 @@
-import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { SuiClient } from "@mysten/sui.js/client";
+import { Transaction } from "@mysten/sui/transactions";
+import { SuiClient } from "@mysten/sui/client";
 import { SUI_NETWORK, tokenizedAssetID } from "../config";
 
 const client = new SuiClient({ url: SUI_NETWORK });
@@ -9,7 +9,7 @@ type TokenizedAssetFields = {
 }
 
 export async function GetBalance(tokenized_asset?: string) {
-    const tx = new TransactionBlock();
+    const tx = new Transaction();
   
     const tokenized_asset_id = tokenized_asset ?? tokenizedAssetID;
 

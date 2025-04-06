@@ -4,7 +4,6 @@ version = "0.0.1"
 published-at = "0x40de5dca83876b34bbf5a7a440be7aa5550df51a15e0fa9a97c41dafbe2e3299"
 
 [dependencies]
-Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/testnet" }
 
 [addresses]
 asset_tokenization = "0x40de5dca83876b34bbf5a7a440be7aa5550df51a15e0fa9a97c41dafbe2e3299"
